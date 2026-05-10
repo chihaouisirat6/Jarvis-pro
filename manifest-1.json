@@ -1,0 +1,22 @@
+{
+  "name": "JARVIS AI Pro",
+  "short_name": "JARVIS",
+  "description": "مساعد ذكاء اصطناعي متقدم",
+  "start_url": "/Jarvis-pro/",
+  "display": "standalone",
+  "background_color": "#000510",
+  "theme_color": "#00ff88",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/000510/00ff88?text=J",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/000510/00ff88?text=J",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
