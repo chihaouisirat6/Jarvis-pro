@@ -1,6 +1,101 @@
-// ==================== CONFIG ====================
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="color-scheme" content="dark">
+    <title>JARVIS AI Pro</title>
+    <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root { --green: #00ff88; --dark: #000510; }
+body { background: var(--dark); color: var(--green); font-family: 'Segoe UI', monospace; height: 100vh; overflow: hidden; }
+#boot { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 1000; }
+.boot-ring { width: 100px; height: 100px; border: 2px solid var(--green); border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; }
+.boot-text { margin-top: 20px; font-size: 24px; letter-spacing: 8px; text-shadow: 0 0 20px var(--green); }
+.boot-loading { width: 200px; height: 3px; background: rgba(0,255,136,0.2); margin-top: 30px; border-radius: 3px; overflow: hidden; }
+.boot-loading div { height: 100%; width: 0%; background: var(--green); animation: load 1.5s forwards; box-shadow: 0 0 10px var(--green); }
+#app { position: relative; height: 100vh; }
+#bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+.face { position: relative; width: 200px; height: 200px; margin: 20px auto; }
+.ring { position: absolute; border-radius: 50%; border: 1px solid rgba(0,255,136,0.3); }
+.r1 { width: 200px; height: 200px; animation: spin 8s linear infinite; }
+.r2 { width: 160px; height: 160px; top: 20px; left: 20px; animation: spin 6s linear infinite reverse; }
+.r3 { width: 120px; height: 120px; top: 40px; left: 40px; animation: spin 4s linear infinite; }
+.core { position: absolute; width: 80px; height: 80px; top: 60px; left: 60px; background: radial-gradient(circle, rgba(0,255,136,0.6), transparent); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: pulse 2s infinite; }
+.eyes { display: flex; gap: 15px; }
+.eye { width: 12px; height: 12px; background: var(--green); border-radius: 50%; box-shadow: 0 0 10px var(--green); position: relative; }
+.pupil { width: 4px; height: 4px; background: #fff; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.mouth { width: 30px; height: 2px; background: var(--green); margin-top: 8px; border-radius: 2px; box-shadow: 0 0 5px var(--green); animation: speak 0.5s infinite alternate; }
+#status { text-align: center; font-size: 14px; margin: 10px 0; text-shadow: 0 0 10px var(--green); }
+.chat { width: 90%; max-width: 400px; height: 180px; margin: 0 auto; background: rgba(0,20,0,0.8); border: 1px solid rgba(0,255,136,0.2); border-radius: 10px; padding: 10px; overflow-y: auto; font-size: 13px; }
+.msg { margin-bottom: 8px; padding: 8px; border-radius: 5px; }
+.msg.user { background: rgba(0,255,136,0.15); border: 1px solid var(--green); margin-left: 20%; }
+.msg.jarvis { background: rgba(0,100,255,0.15); border: 1px solid #0088ff; margin-right: 20%; }
+.agents { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
+.agent { width: 50px; height: 50px; border-radius: 50%; border: 1px solid rgba(0,255,136,0.3); background: rgba(0,255,136,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: all 0.3s; }
+.agent.active { background: rgba(0,255,136,0.3); border-color: var(--green); box-shadow: 0 0 15px var(--green); transform: scale(1.1); }
+.controls { display: flex; gap: 8px; padding: 0 20px; margin-bottom: 10px; }
+.controls button { width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--green); background: rgba(0,255,136,0.2); color: var(--green); font-size: 20px; cursor: pointer; }
+.controls input { flex: 1; background: rgba(0,20,0,0.8); border: 1px solid var(--green); color: var(--green); padding: 10px; border-radius: 25px; font-family: inherit; }
+#mic.recording { background: rgba(255,0,0,0.3); border-color: #ff0044; animation: pulse-red 1s infinite; }
+.tools { display: flex; justify-content: center; gap: 8px; padding: 10px; }
+.tools button { width: 45px; height: 45px; border-radius: 50%; border: 1px solid rgba(0,255,136,0.3); background: rgba(0,255,136,0.1); font-size: 18px; cursor: pointer; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+@keyframes load { to { width: 100%; } }
+@keyframes speak { from { width: 20px; } to { width: 40px; } }
+@keyframes pulse-red { 0%,100% { box-shadow: 0 0 5px #f00; } 50% { box-shadow: 0 0 20px #f00; } }
+.hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div id="boot">
+        <div class="boot-ring"></div>
+        <div class="boot-text">J.A.R.V.I.S</div>
+        <div class="boot-loading"><div></div></div>
+    </div>
+
+    <div id="app" class="hidden">
+        <canvas id="bg"></canvas>
+        <div class="face">
+            <div class="ring r1"></div>
+            <div class="ring r2"></div>
+            <div class="ring r3"></div>
+            <div class="core">
+                <div class="eyes">
+                    <div class="eye"><div class="pupil"></div></div>
+                    <div class="eye"><div class="pupil"></div></div>
+                </div>
+                <div class="mouth"></div>
+            </div>
+        </div>
+        <div id="status">اضغط 🎤 للبدء</div>
+        <div class="chat" id="chat"></div>
+        <div class="agents">
+            <div class="agent active" onclick="setAgent('voice')">🎙️</div>
+            <div class="agent" onclick="setAgent('vision')">👁️</div>
+            <div class="agent" onclick="setAgent('search')">🔍</div>
+            <div class="agent" onclick="setAgent('code')">💻</div>
+            <div class="agent" onclick="setAgent('auto')">⚡</div>
+        </div>
+        <div class="controls">
+            <button id="mic" onclick="toggleMic()">🎤</button>
+            <input type="text" id="input" placeholder="اكتب هنا..." onkeypress="if(event.key==='Enter')send()">
+            <button onclick="send()">➤</button>
+        </div>
+        <div class="tools">
+            <button onclick="openInstagram()">📷</button>
+            <button onclick="openYouTube()">▶️</button>
+            <button onclick="openWhatsApp()">💬</button>
+            <button onclick="openCamera()">📸</button>
+            <button onclick="toggleFlash()">🔦</button>
+            <button onclick="getLocation()">📍</button>
+        </div>
+    </div>
+
+<script>
 const CONFIG = {
-    geminiKey: localStorage.getItem('jarvis_api_key') || 'AIzaSyDzYZUEB7lKF8ssXoXPRKbasruajEC8Y08',
+    geminiKey: 'AIzaSyDzYZUEB7lKF8ssXoXPRKbasruajEC8Y08',
     agent: 'voice',
     agents: {
         voice: { name: 'VOICE', color: '#00ff88', prompt: 'مساعد صوتي ذكي' },
@@ -14,275 +109,121 @@ const CONFIG = {
 let recognition = null;
 let isRecording = false;
 
-// ==================== INIT ====================
-document.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('load', () => {
     initParticles();
-    
-    // Boot animation
     setTimeout(() => {
-        const boot = document.getElementById('boot');
-        const app = document.getElementById('app');
-        if (boot) boot.style.display = 'none';
-        if (app) {
-            app.classList.remove('hidden');
-            app.style.display = 'block';
-        }
+        document.getElementById('boot').style.display = 'none';
+        document.getElementById('app').classList.remove('hidden');
         speak('جارفيس جاهز');
     }, 1500);
 });
 
-// ==================== PARTICLES ====================
 function initParticles() {
     const canvas = document.getElementById('bg');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
     const particles = [];
     for (let i = 0; i < 60; i++) {
-        particles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            vx: (Math.random() - 0.5) * 0.5,
-            vy: (Math.random() - 0.5) * 0.5,
-            size: Math.random() * 2
-        });
+        particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5, size: Math.random()*2 });
     }
-
     function animate() {
-        ctx.fillStyle = 'rgba(0, 5, 16, 0.1)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+        ctx.fillStyle = 'rgba(0,5,16,0.1)';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
         particles.forEach(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            if (p.x < 0) p.x = canvas.width;
-            if (p.x > canvas.width) p.x = 0;
-            if (p.y < 0) p.y = canvas.height;
-            if (p.y > canvas.height) p.y = 0;
-
-            ctx.fillStyle = 'rgba(0, 255, 136, 0.5)';
-            ctx.fillRect(p.x, p.y, p.size, p.size);
+            p.x += p.vx; p.y += p.vy;
+            if(p.x<0) p.x=canvas.width; if(p.x>canvas.width) p.x=0;
+            if(p.y<0) p.y=canvas.height; if(p.y>canvas.height) p.y=0;
+            ctx.fillStyle='rgba(0,255,136,0.5)';
+            ctx.fillRect(p.x,p.y,p.size,p.size);
         });
-
-        // Connect
-        particles.forEach((p1, i) => {
-            particles.slice(i + 1).forEach(p2 => {
-                const dx = p1.x - p2.x;
-                const dy = p1.y - p2.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < 100) {
-                    ctx.strokeStyle = `rgba(0, 255, 136, ${0.2 * (1 - dist/100)})`;
-                    ctx.lineWidth = 0.5;
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.stroke();
-                }
+        particles.forEach((p1,i) => {
+            particles.slice(i+1).forEach(p2 => {
+                const dx=p1.x-p2.x, dy=p1.y-p2.y, d=Math.sqrt(dx*dx+dy*dy);
+                if(d<100){ ctx.strokeStyle=`rgba(0,255,136,${0.2*(1-d/100)})`; ctx.lineWidth=0.5; ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke(); }
             });
         });
-
         requestAnimationFrame(animate);
     }
     animate();
 }
 
-// ==================== VOICE ====================
-function toggleMic() {
-    if (isRecording) {
-        stopRecording();
-    } else {
-        startRecording();
-    }
-}
+function toggleMic() { isRecording ? stopRecording() : startRecording(); }
 
 function startRecording() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        alert('المتصفح لا يدعم الصوت');
-        return;
-    }
-
-    recognition = new SpeechRecognition();
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('المتصفح لا يدعم الصوت'); return; }
+    recognition = new SR();
     recognition.lang = 'ar-SA';
     recognition.continuous = false;
     recognition.interimResults = false;
-
-    recognition.onstart = () => {
-        isRecording = true;
-        document.getElementById('mic').classList.add('recording');
-        document.getElementById('status').textContent = 'أستمع...';
-    };
-
-    recognition.onend = () => {
-        isRecording = false;
-        document.getElementById('mic').classList.remove('recording');
-        document.getElementById('status').textContent = 'اضغط 🎤 للبدء';
-    };
-
-    recognition.onresult = (e) => {
-        const text = e.results[0][0].transcript;
-        addMsg('أنت', text);
-        process(text);
-    };
-
+    recognition.onstart = () => { isRecording=true; document.getElementById('mic').classList.add('recording'); document.getElementById('status').textContent='أستمع...'; };
+    recognition.onend = () => { isRecording=false; document.getElementById('mic').classList.remove('recording'); document.getElementById('status').textContent='اضغط 🎤 للبدء'; };
+    recognition.onresult = e => { const text=e.results[0][0].transcript; addMsg('أنت',text); process(text); };
     recognition.start();
 }
 
-function stopRecording() {
-    if (recognition) recognition.stop();
-}
+function stopRecording() { if(recognition) recognition.stop(); }
+function speak(text) { const u=new SpeechSynthesisUtterance(text); u.lang='ar-SA'; u.rate=0.9; speechSynthesis.speak(u); }
 
-function speak(text) {
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'ar-SA';
-    u.rate = 0.9;
-    speechSynthesis.speak(u);
-}
-
-// ==================== AI ====================
 async function process(text) {
     const lower = text.toLowerCase();
-
-    // Commands
-    if (lower.includes('انستغرام') || lower.includes('instagram')) {
-        openInstagram(); return;
-    }
-    if (lower.includes('يوتيوب') || lower.includes('youtube')) {
-        openYouTube(); return;
-    }
-    if (lower.includes('واتساب') || lower.includes('whatsapp')) {
-        openWhatsApp(); return;
-    }
-    if (lower.includes('كاميرا') || lower.includes('camera')) {
-        openCamera(); return;
-    }
-    if (lower.includes('فلاش') || lower.includes('flash')) {
-        toggleFlash(); return;
-    }
-    if (lower.includes('مكان') || lower.includes('location')) {
-        getLocation(); return;
-    }
-    if (lower.includes('وقت') || lower.includes('time')) {
-        const now = new Date().toLocaleTimeString('ar-SA');
-        speak('الساعة ' + now);
-        addMsg('JARVIS', '🕐 ' + now);
-        return;
-    }
-
-    // AI
-    document.getElementById('status').textContent = 'أفكر...';
+    if(lower.includes('انستغرام')||lower.includes('instagram')){ openInstagram(); return; }
+    if(lower.includes('يوتيوب')||lower.includes('youtube')){ openYouTube(); return; }
+    if(lower.includes('واتساب')||lower.includes('whatsapp')){ openWhatsApp(); return; }
+    if(lower.includes('كاميرا')||lower.includes('camera')){ openCamera(); return; }
+    if(lower.includes('وقت')||lower.includes('time')){ const now=new Date().toLocaleTimeString('ar-SA'); speak('الساعة '+now); addMsg('JARVIS','🕐 '+now); return; }
+    if(lower.includes('مكان')||lower.includes('location')){ getLocation(); return; }
+    document.getElementById('status').textContent='أفكر...';
     const reply = await askAI(text);
-    document.getElementById('status').textContent = 'اضغط 🎤 للبدء';
-    
+    document.getElementById('status').textContent='اضغط 🎤 للبدء';
     addMsg('JARVIS', reply);
     speak(reply);
 }
 
 async function askAI(message) {
     try {
-        const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${CONFIG.geminiKey}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: `أنت JARVIS. ${CONFIG.agents[CONFIG.agent].prompt}. أجب بالعربية بإيجاز.\n\nالمستخدم: ${message}`
-                        }]
-                    }]
-                })
-            }
-        );
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${CONFIG.geminiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: `أنت JARVIS. ${CONFIG.agents[CONFIG.agent].prompt}. أجب بالعربية بإيجاز.\n\nالمستخدم: ${message}` }] }] })
+        });
         const data = await res.json();
         return data.candidates[0].content.parts[0].text;
-    } catch (e) {
-        return 'خطأ في الاتصال. تأكد من API Key.';
+    } catch(e) {
+        return 'خطأ في الاتصال.';
     }
 }
 
-function send() {
-    const input = document.getElementById('input');
-    const text = input.value.trim();
-    if (!text) return;
-    input.value = '';
-    addMsg('أنت', text);
-    process(text);
-}
+function send() { const input=document.getElementById('input'); const text=input.value.trim(); if(!text) return; input.value=''; addMsg('أنت',text); process(text); }
 
-// ==================== APPS (Capacitor Bridge) ====================
-function openInstagram() {
-    window.location.href = 'intent://instagram.com/#Intent;package=com.instagram.android;scheme=https;end';
-    speak('أفتح انستغرام');
-    addMsg('JARVIS', '📷 أفتح Instagram...');
-}
+function openInstagram() { window.location.href='intent://instagram.com/#Intent;package=com.instagram.android;scheme=https;end'; speak('أفتح انستغرام'); addMsg('JARVIS','📷 أفتح Instagram...'); }
+function openYouTube() { window.location.href='intent://youtube.com/#Intent;package=com.google.android.youtube;scheme=https;end'; speak('أفتح يوتيوب'); addMsg('JARVIS','▶️ أفتح YouTube...'); }
+function openWhatsApp() { window.location.href='intent://api.whatsapp.com/#Intent;package=com.whatsapp;scheme=https;end'; speak('أفتح واتساب'); addMsg('JARVIS','💬 أفتح WhatsApp...'); }
+function openCamera() { const input=document.createElement('input'); input.type='file'; input.accept='image/*'; input.capture='environment'; input.click(); speak('أفتح الكاميرا'); }
+function toggleFlash() { speak('الفلاش يحتاج صلاحيات إضافية'); addMsg('JARVIS','🔦 يحتاج Capacitor Plugin'); }
+function getLocation() { navigator.geolocation.getCurrentPosition(pos => { const {latitude,longitude}=pos.coords; speak(`موقعك: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`); addMsg('JARVIS',`📍 ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`); }, () => speak('لم أستطع الحصول على الموقع')); }
 
-function openYouTube() {
-    window.location.href = 'intent://youtube.com/#Intent;package=com.google.android.youtube;scheme=https;end';
-    speak('أفتح يوتيوب');
-    addMsg('JARVIS', '▶️ أفتح YouTube...');
-}
-
-function openWhatsApp() {
-    window.location.href = 'intent://api.whatsapp.com/#Intent;package=com.whatsapp;scheme=https;end';
-    speak('أفتح واتساب');
-    addMsg('JARVIS', '💬 أفتح WhatsApp...');
-}
-
-function openCamera() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment';
-    input.click();
-    speak('أفتح الكاميرا');
-}
-
-function toggleFlash() {
-    if (window.Capacitor) {
-        // سنعرفه لاحقاً
-    }
-    speak('الفلاش يحتاج صلاحيات إضافية');
-    addMsg('JARVIS', '🔦 يحتاج Capacitor Plugin');
-}
-
-function getLocation() {
-    navigator.geolocation.getCurrentPosition(
-        pos => {
-            const { latitude, longitude } = pos.coords;
-            speak(`موقعك: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
-            addMsg('JARVIS', `📍 ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
-        },
-        () => speak('لم أستطع الحصول على الموقع')
-    );
-}
-
-// ==================== AGENTS ====================
 function setAgent(id) {
-    CONFIG.agent = id;
-    document.querySelectorAll('.agent').forEach(el => el.classList.remove('active'));
+    CONFIG.agent=id;
+    document.querySelectorAll('.agent').forEach(el=>el.classList.remove('active'));
     document.querySelectorAll('.agent')[Object.keys(CONFIG.agents).indexOf(id)].classList.add('active');
-    
-    const agent = CONFIG.agents[id];
-    document.querySelector('.core').style.background = `radial-gradient(circle, ${agent.color}99, transparent)`;
-    document.querySelectorAll('.eye').forEach(eye => {
-        eye.style.background = agent.color;
-        eye.style.boxShadow = `0 0 10px ${agent.color}`;
-    });
-    
+    const agent=CONFIG.agents[id];
+    document.querySelector('.core').style.background=`radial-gradient(circle, ${agent.color}99, transparent)`;
+    document.querySelectorAll('.eye').forEach(eye=>{ eye.style.background=agent.color; eye.style.boxShadow=`0 0 10px ${agent.color}`; });
     speak(`وكيل ${agent.name} نشط`);
-    addMsg('JARVIS', `✅ وكيل ${agent.name}: ${agent.prompt}`);
+    addMsg('JARVIS',`✅ وكيل ${agent.name}: ${agent.prompt}`);
 }
 
-// ==================== HELPERS ====================
 function addMsg(sender, text) {
-    const chat = document.getElementById('chat');
-    const div = document.createElement('div');
-    div.className = `msg ${sender === 'أنت' ? 'user' : 'jarvis'}`;
-    div.textContent = `${sender}: ${text}`;
+    const chat=document.getElementById('chat');
+    const div=document.createElement('div');
+    div.className=`msg ${sender==='أنت'?'user':'jarvis'}`;
+    div.textContent=`${sender}: ${text}`;
     chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
+    chat.scrollTop=chat.scrollHeight;
 }
+</script>
+</body>
+    </html>
+    
