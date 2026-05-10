@@ -1,2 +1,0 @@
-# Jarvis-pro
-Ia agent
